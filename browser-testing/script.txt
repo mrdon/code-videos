@@ -1,0 +1,92 @@
+Automated browser tests explained in code
+
+This clip right here is actually made by an automated test that uses selenium to drive the browser. When your team considers continuous delivery, one of the first questions you need to ask yourself is how is my test coverage? Browser tests are often the most useful yet the most mysterious and difficult to maintain, so let's dive into how to write a maintainable browser test with Python, selenium, and Chrome, with bonus tips on making debugging easier when things go wrong. Don't touch that dial!
+
+
+At a high level, it goes like this:
+
+:: CI->Test: Triggered from a commit
+
+A selenium test is triggered like any other test.
+
+:: Test->Database: Set up initial state
+
+It is important to not have the browser do too much. Create the initial data outside browser interactions to keep the test fast and simple.
+
+:: Test->Browser: Starts a chrome instance, often headless
+
+For development, you may want the browser to show, but for CI, you'll want it headless
+
+:: Test->Browser: Issues commands and requests data
+
+Actual clicks and hovers are performed in the browser. The test is literally driving the browser.
+
+:: Test->Database: Request data directly
+:: Database->Test: Returns data
+
+Sometimes it is faster and more useful to verify changed data by accessing the database directly.
+
+:: Test->Test: Asserts based on the data
+:: Test->CI: Returns a list of passed and failed tests
+
+And the rest of the test works as usual
+
+Let's dive into the code of an actual production test we use in Sleuth. It is in Python, but the concepts apply in most any language and testing framework.
+
+:: Show TestMyNotifications  Line 8-19
+
+Line 8: We have a base class start up the browser and load the initial data into the database, called a fixture.
+
+Line 10: Here's where it gets interesting. We usually use a page object pattern to help our tests be easy to create, maintain, and read. 
+
+:: Show LoginPage  Line 13-22
+
+Line 18-22: For example, in this login method, we hide or encapsulate the actual browser commands to perform the login such as visiting the url, typing in fields, and clicking the login button.
+
+Not only does this make the test easier to read, we create a reusable component that can and is used in many other tests to perform the same function. Even better, if we change how logins work, we have one place to change and not 100s of tests.
+
+:: Show TestMyNotifications  Line 8-19
+
+Line 11: Back in the test, we use another page object that represents the notification page. 
+
+Line 13-15: With the high level page object properties, we can naturally extract information from the page and can perform the usual asserts
+
+Line 17: Again, the page object hides the details of performing a task like toggling a setting
+
+:: Show the test being ran on the command line
+
+Now, when I run this test on the command line with pytest, in development, the browser pops up and I can visually verify the test is working as expected.
+
+However, if it isn't, I can use a debugger to debug both the test and the browser state.
+
+:: Show pycharm adding a breakpoint, run the test, explore the variable state, and evaluate a command
+
+I use PyCharm, a Python editor by Jetbrains, which makes debugging tests easy. I can add a breakpoint, run the test in the editor, and then do things like inspect variable state or even execute arbirary Python commands to try out selenium commands rapidly.
+
+:: Show the browser, open the inspector, and put a breakpoint in Javascript
+
+I can also use breakpoints in the browser. While the test is at a server-side breakpoint, I can click around and inspect the browser state, including adding Javascript breakpoints.
+
+:: Cut to just me
+
+One more thing. In CI, when a UI test inevitably fails, or worse, is flaky, it can be hard to know what went wrong.
+
+:: test_ui_base line 55-65
+
+In my base class, I like to add code that, in the case of a failed test, takes a screenshot of the page at the time of the failure. The screenshot is then saved by the CI system as an artifact, making it easier to debug that flaky test.
+
+:: Cut to just me
+
+There is a lot more to browser-based testing, but that's how we do it in Sleuth, my startup. If there is a topic around continuous deployment or testing you'd like me to cover, please let me know in the comments below.
+
+If you'd like to know more information about continuous deployment, you can click on this video up here or if you want to know more about the library I wrote to create the code and diagram animations or Sleuth itself, you can visit the links in the description below.
+
+I also stream open source and Sleuth development on Twitch Tuesday and Thurday around 3 PM Mountain standard time, so please come by with questions or just to hang out.
+
+Happy deploying!
+
+
+I'm going to show you actual production tests that we use in Sleuth and walk through how it works.
+
+
+

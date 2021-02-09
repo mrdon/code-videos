@@ -1,30 +1,30 @@
-Automated browser tests explained in code
+Title: Automated browser tests explained in code
 
-This clip right here is actually made by an automated test that uses selenium to drive the browser. When your team considers continuous delivery, one of the first questions you need to ask yourself is how is my test coverage? Browser tests are often the most useful yet the most mysterious and difficult to maintain, so let's dive into how to write a maintainable browser test with Python, selenium, and Chrome, with bonus tips on making debugging easier when things go wrong. Don't touch that dial!
+This clip is actually made by an automated test that uses selenium to drive the web browser. When your team considers continuous delivery, one of the first questions you need to ask yourself is how is my test coverage? Browser tests are often the most useful yet the most mysterious and difficult to maintain, so let's dive into how to write a maintainable browser test with Python, selenium, and Chrome, with bonus tips to make debugging easier when things go wrong. Don't touch that dial!
 
 
 At a high level, it goes like this:
 
 :: CI->Test: Triggered from a commit
 
-A selenium test is triggered like any other test.
+A selenium test is triggered like any other test, usually from a git push.
 
 :: Test->Database: Set up initial state
 
-It is important to not have the browser do too much. Create the initial data outside browser interactions to keep the test fast and simple.
+It is important to not drive the browser do too much. Before running the test, create the initial data outside browser interactions to keep the test fast and simple.
 
 :: Test->Browser: Starts a chrome instance, often headless
 
-For development, you may want the browser to show, but for CI, you'll want it headless
+For development, you may want the browser to show, but for CI, you'll want it headless.
 
 :: Test->Browser: Issues commands and requests data
 
-Actual clicks and hovers are performed in the browser. The test is literally driving the browser.
+Next, actual clicks and hovers are performed in the browser. The test is literally driving the browser.
 
 :: Test->Database: Request data directly
 :: Database->Test: Returns data
 
-Sometimes it is faster and more useful to verify changed data by accessing the database directly.
+In addition to asserting on returned browser data, sometimes it is faster and more useful to verify changed data by accessing the database directly.
 
 :: Test->Test: Asserts based on the data
 :: Test->CI: Returns a list of passed and failed tests
